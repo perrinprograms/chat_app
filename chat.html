@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Socket.IO chat</title>
+    <link href="./content/css/chat.css" rel="stylesheet" />
+</head>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+    $(function () {
+        var socket = io.connect("http://localhost:3000");
+        $('form').submit(function () {
+            socket.emit('chat message', $('#m').val());
+            $('#m').val('');
+            return false;
+        });
+        socket.on('connect', function (msg) {
+            socket.emit('join', prompt('your name?'));
+        });
+        socket.on('join', function (user) {
+            $('#messages').append($('<li>' + user + " has joined the room!" + "</li>"));
+        });
+        socket.on('chat message', function (data) {
+            $('#messages').append($('<li>' + data.name + ": " + data.msg + "</li>"))
+        });
+        socket.on('leave', function (data) {
+            $('#messages').append($('<li>' + data.name + " has left the room!" + "</li>"));
+        });
+    });
+</script>
+
+
+<body>
+    <ul id="messages"></ul>
+    <form action="">
+        <input id="m" autocomplete="off" /><button>Send</button><button id="change-name">Change Name</button>
+    </form>
+</body>
+
+</html>
