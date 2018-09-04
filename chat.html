@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Socket.IO chat</title>
+    <title>Zoller C# reference</title>
     <link href="./content/css/chat.css" rel="stylesheet" />
 </head>
 <script src="/socket.io/socket.io.js"></script>
@@ -10,7 +10,8 @@
 <script>
     $(function () {
         var itsUser = prompt('your name?');
-        var socket = io.connect("http://localhost:3000");
+        var socket = io.connect("http://192.168.16.119:3000");
+
         $('form').submit(function () {
             socket.emit('chat message', $('#m').val());
             $('#m').val('');
@@ -28,42 +29,61 @@
         socket.on('connect', function (msg) {
             socket.emit('join', itsUser);
         });
+
         socket.on('join', function (user) {
             if (itsUser != user)
                 $('#messages').append($('<li>' + user + " has joined the room!" + "</li>"));
             else
                 $('#messages').append($('<li>' + "Welcome, " + user + "! Enjoy your visit!" + "</li>"));
-
         });
+
         socket.on('chat message', function (data) {
+
             if (itsUser != data.name) {
                 $('#messages').append($('<li>' + data.name + ": " + data.msg + "</li>"))
                 $('#user-typing').html("");
-            }
-            else
+            } else
                 $('#messages').append($('<li>' + "You" + ": " + data.msg + "</li>"))
+            //console.log($(window).scrollTop());
+            var messagePadding = $('#chat-window').css("padding-bottom");
+            var windowHeight = $(window).height();
+            var theBottomPadding = messagePadding.substr(0, messagePadding.indexOf('px'));
+            var scrollposition = $(window).scrollTop() + windowHeight - $('#m').height() -
+                theBottomPadding;
+
+            if (scrollposition < $("#messages li").last().position().top)
+                window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: "smooth"
+                })
         });
+
         socket.on('leave', function (data) {
             $('#messages').append($('<li>' + data.name + " has left the room!" + "</li>"));
         });
+
         socket.on('user typing', function (data) {
             if (data.typing && data.name != itsUser)
                 $('#user-typing').html(data.name + ' is typing...');
             else if (!data.typing && data.name != itsUser) {
                 $('#user-typing').html('');
             }
-
         });
     });
 </script>
 
 
 <body>
-    <ul id="messages"></ul>
-    <form action="">
-        <input id="m" autocomplete="off" /><button>Send</button><button id="change-name">Change Name</button>
-    </form>
-    <div id="user-typing"></div>
+    <div id="chat-window">
+        <ul id="messages"></ul>
+        <div id="user-typing"></div>
+    </div>
+    <div id="message-area">
+        <form action="">
+            <input id="m" autocomplete="off" /><button>Send</button>
+        </form>
+    </div>
+
 </body>
 
 </html>
