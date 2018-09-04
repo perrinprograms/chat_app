@@ -36,8 +36,10 @@
 
         });
         socket.on('chat message', function (data) {
-            if (itsUser != data.name)
+            if (itsUser != data.name) {
                 $('#messages').append($('<li>' + data.name + ": " + data.msg + "</li>"))
+                $('#user-typing').html("");
+            }
             else
                 $('#messages').append($('<li>' + "You" + ": " + data.msg + "</li>"))
         });
@@ -47,9 +49,10 @@
         socket.on('user typing', function (data) {
             if (data.typing && data.name != itsUser)
                 $('#user-typing').html(data.name + ' is typing...');
-            else {
-                $('#user-typing').html(" ");
+            else if (!data.typing && data.name != itsUser) {
+                $('#user-typing').html('');
             }
+
         });
     });
 </script>
