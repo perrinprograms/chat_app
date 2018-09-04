@@ -9,23 +9,47 @@
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
     $(function () {
+        var itsUser = prompt('your name?');
         var socket = io.connect("http://localhost:3000");
         $('form').submit(function () {
             socket.emit('chat message', $('#m').val());
             $('#m').val('');
             return false;
         });
+        $('#m').on('keyup', function (isTyping) {
+            if ($('#m').val())
+                isTyping = true;
+            else
+                isTyping = false;
+
+            socket.emit('user typing', isTyping);
+            return false;
+        })
         socket.on('connect', function (msg) {
-            socket.emit('join', prompt('your name?'));
+            socket.emit('join', itsUser);
         });
         socket.on('join', function (user) {
-            $('#messages').append($('<li>' + user + " has joined the room!" + "</li>"));
+            if (itsUser != user)
+                $('#messages').append($('<li>' + user + " has joined the room!" + "</li>"));
+            else
+                $('#messages').append($('<li>' + "Welcome, " + user + "! Enjoy your visit!" + "</li>"));
+
         });
         socket.on('chat message', function (data) {
-            $('#messages').append($('<li>' + data.name + ": " + data.msg + "</li>"))
+            if (itsUser != data.name)
+                $('#messages').append($('<li>' + data.name + ": " + data.msg + "</li>"))
+            else
+                $('#messages').append($('<li>' + "You" + ": " + data.msg + "</li>"))
         });
         socket.on('leave', function (data) {
             $('#messages').append($('<li>' + data.name + " has left the room!" + "</li>"));
+        });
+        socket.on('user typing', function (data) {
+            if (data.typing && data.name != itsUser)
+                $('#user-typing').html(data.name + ' is typing...');
+            else {
+                $('#user-typing').html(" ");
+            }
         });
     });
 </script>
@@ -36,6 +60,7 @@
     <form action="">
         <input id="m" autocomplete="off" /><button>Send</button><button id="change-name">Change Name</button>
     </form>
+    <div id="user-typing"></div>
 </body>
 
 </html>
