@@ -3,7 +3,9 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 
+
 var usernames = [];
+var PeopleTyping = [];
 
 app.use(express.static(__dirname));
 
@@ -19,6 +21,7 @@ app.get("/", function (req, res) {
 });
 
 io.on("connection", function (socket) {
+
   socket.on("join", function (name) {
     socket.name = name;
     usernames.push(socket.name);
@@ -26,21 +29,34 @@ io.on("connection", function (socket) {
   });
 
   socket.on("user typing", function (isUserTyping) {
+
     socket.typing = isUserTyping;
+
+    if (socket.typing && !PeopleTyping.includes(socket.name)) {
+      PeopleTyping.push(socket.name)
+    } else if (!socket.typing) {
+      PeopleTyping.splice(PeopleTyping.indexOf(socket.name), 1);
+    }
+
     io.emit("user typing", {
-      name: socket.name,
-      typing: socket.typing
+      names: PeopleTyping,
+      typing: socket.typing,
+      name: socket.name
     });
   });
 
-  socket.on("chat message", function (data) {
+  socket.on("chat message", function (message) {
+    var sanitizeHtml = require('sanitize-html');
+    var clean = sanitizeHtml(message);
     io.emit("chat message", {
-      msg: data,
+      msg: clean,
       name: socket.name
     });
   });
 
   socket.on("disconnect", function (data) {
+    if (PeopleTyping.includes(socket.name)) //if someone is typing while they disconnect, it won't keep them in the array
+      PeopleTyping.splice(PeopleTyping.indexOf(socket.name), 1);
     io.emit("leave", {
       name: socket.name
     });

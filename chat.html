@@ -9,41 +9,51 @@
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
     $(function () {
-        var itsUser = prompt('your name?');
+        //the client user is the user currently on the page, he is a socket, but not to himself. (confusing)
+        //TODO: implement a user class
+
+        //prompts user for username on first load. 
+        //TODO: add this as a method of the user class. 
+        //TODO: create a separate form for this instead of a prompt
+
+        var ClientUserName = prompt('please enter your name')
         var socket = io.connect("http://192.168.16.119:3000");
 
+        //when a chat message is sent, we will emit the message back to the server.(index.js)
         $('form').submit(function () {
-            socket.emit('chat message', $('#m').val());
-            $('#m').val('');
+            socket.emit('chat message', $('#m').val()); //value of input 
+            $('#m').val(''); //after sending a message, the text box is set to empty
             return false;
         });
-        $('#m').on('keyup', function (isTyping) {
+        $('#m').on('keyup', function (isTyping) { //checks when a user is typing, this info is sent back to the server
             if ($('#m').val())
                 isTyping = true;
             else
                 isTyping = false;
-
-            socket.emit('user typing', isTyping);
+            socket.emit('user typing', isTyping); //goes to user typing method
             return false;
-        })
-        socket.on('connect', function (msg) {
-            socket.emit('join', itsUser);
+        });
+        socket.on('connect', function (data) {
+            socket.emit('join', ClientUserName);
         });
 
         socket.on('join', function (user) {
-            if (itsUser != user)
+
+            if (ClientUserName != user)
                 $('#messages').append($('<li>' + user + " has joined the room!" + "</li>"));
             else
-                $('#messages').append($('<li>' + "Welcome, " + user + "! Enjoy your visit!" + "</li>"));
+                $('#messages').append($('<li>' + "Welcome, " + user + "! Enjoy your visit!" +
+                    "</li>"));
         });
 
         socket.on('chat message', function (data) {
 
-            if (itsUser != data.name) {
-                $('#messages').append($('<li>' + data.name + ": " + data.msg + "</li>"))
+            if (ClientUserName != data.name) {
+                if (data.msg)
+                    $('#messages').append($('<li>').append(data.name + ": " + data.msg + "</li>"))
                 $('#user-typing').html("");
             } else
-                $('#messages').append($('<li>' + "You" + ": " + data.msg + "</li>"))
+                $('#messages').append($('<li>' + "You: " + data.msg + "</li>"))
             //console.log($(window).scrollTop());
             var messagePadding = $('#chat-window').css("padding-bottom");
             var windowHeight = $(window).height();
@@ -63,11 +73,22 @@
         });
 
         socket.on('user typing', function (data) {
-            if (data.typing && data.name != itsUser)
-                $('#user-typing').html(data.name + ' is typing...');
-            else if (!data.typing && data.name != itsUser) {
-                $('#user-typing').html('');
+
+            if (data.typing && data.name != ClientUserName) {
+                if (data.names.length == 1) {
+                    $('#user-typing').html(data.names[0] + " is typing..");
+                } else
+                    $('#user-typing').html(data.names.join(',') + " are typing..")
+
+            } else if (!data.typing && data.name != ClientUserName) {
+                if (data.names.length && data.name != ClientUserName)
+                    $('#user-typing').html(data.names.join(',') + " are typing..");
+                if (data.names.length == 1)
+                    $('#user-typing').html(data.names[0] + " is typing..");
+                else
+                    $('#user-typing').html('');
             }
+
         });
     });
 </script>
