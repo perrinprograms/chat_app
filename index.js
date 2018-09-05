@@ -15,24 +15,18 @@ const io = socketIO(server);
 var usernames = [];
 var PeopleTyping = [];
 
-/* app.get("/", function (req, res) {
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  // Request headers you wish to allow
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-  // Set to true if you need the website to include cookies in the requests sent
-  // to the API (e.g. in case you use sessions)
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.sendFile(__dirname + "/chat.html");
-}); */
-
-io.on("connection", function(socket) {
-  socket.on("join", function(name) {
+//when someone is typing it will hit this point in the server. 
+io.on("connection", function (socket) {
+  socket.on("join", function (name) {
     socket.name = name;
+    //pushing the usernames to an array 
+    //TODO: if the username exists, they must choose a new name. 
     usernames.push(socket.name);
     io.emit("join", socket.name);
   });
 
-  socket.on("user typing", function(isUserTyping) {
+  //when someone is typing, it will hit this point in the server
+  socket.on("user typing", function (isUserTyping) {
     socket.typing = isUserTyping;
 
     if (socket.typing && !PeopleTyping.includes(socket.name)) {
@@ -40,7 +34,7 @@ io.on("connection", function(socket) {
     } else if (!socket.typing) {
       PeopleTyping.splice(PeopleTyping.indexOf(socket.name), 1);
     }
-
+    //send an array of all who are typing to client
     io.emit("user typing", {
       names: PeopleTyping,
       typing: socket.typing,
@@ -48,16 +42,19 @@ io.on("connection", function(socket) {
     });
   });
 
-  socket.on("chat message", function(message) {
+  //when a chat message is sent on the front end, it will come here
+  socket.on("chat message", function (message) {
+    //sanitizing the messages which are sent 
     var sanitizeHtml = require("sanitize-html");
-    var clean = sanitizeHtml(message);
-    io.emit("chat message", {
-      msg: message,
-      name: socket.name
-    });
+    var clean_message = sanitizeHtml(message); {
+      io.emit("chat message", {
+        msg: clean_message,
+        name: socket.name
+      });
+    }
   });
 
-  socket.on("disconnect", function(data) {
+  socket.on("disconnect", function (data) {
     if (PeopleTyping.includes(socket.name))
       //if someone is typing while they disconnect, it won't keep them in the array
       PeopleTyping.splice(PeopleTyping.indexOf(socket.name), 1);
