@@ -49,9 +49,12 @@
         socket.on('chat message', function (data) {
 
             if (ClientUserName != data.name) {
-                if (data.msg)
+                if (data.msg) {
+                    var audio = new Audio('./content/audio/not-bad.mp3');
+                    audio.play();
                     $('#messages').append($('<li>').append(data.name + ": " + data.msg + "</li>"))
-                $('#user-typing').html("");
+                    $('#user-typing').html("");
+                }
             } else
                 $('#messages').append($('<li>' + "You: " + data.msg + "</li>"))
             //console.log($(window).scrollTop());
