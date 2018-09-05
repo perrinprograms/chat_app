@@ -1,24 +1,19 @@
-'use strict';
+"use strict";
 
-const express = require('express');
-const socketIO = require('socket.io');
-const path = require('path');
-var app = express();
-const PORT = process.env.PORT || 3000;
-const INDEX = path.join(__dirname, 'chat.html');
+const express = require("express");
+const socketIO = require("socket.io");
+const path = require("path");
+const PORT = process.env.PORT || 49153;
+const INDEX = path.join(__dirname, "chat.html");
 
 const server = express()
   .use(express.static(__dirname), (req, res) => res.sendFile(INDEX))
-  .listen(PORT, () => console.log(`Listening on ${ PORT }`));
-
-
+  .listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 const io = socketIO(server);
 
 var usernames = [];
 var PeopleTyping = [];
-
-
 
 /* app.get("/", function (req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -30,22 +25,18 @@ var PeopleTyping = [];
   res.sendFile(__dirname + "/chat.html");
 }); */
 
-
-
-io.on("connection", function (socket) {
-
-  socket.on("join", function (name) {
+io.on("connection", function(socket) {
+  socket.on("join", function(name) {
     socket.name = name;
     usernames.push(socket.name);
     io.emit("join", socket.name);
   });
 
-  socket.on("user typing", function (isUserTyping) {
-
+  socket.on("user typing", function(isUserTyping) {
     socket.typing = isUserTyping;
 
     if (socket.typing && !PeopleTyping.includes(socket.name)) {
-      PeopleTyping.push(socket.name)
+      PeopleTyping.push(socket.name);
     } else if (!socket.typing) {
       PeopleTyping.splice(PeopleTyping.indexOf(socket.name), 1);
     }
@@ -57,17 +48,18 @@ io.on("connection", function (socket) {
     });
   });
 
-  socket.on("chat message", function (message) {
-    var sanitizeHtml = require('sanitize-html');
+  socket.on("chat message", function(message) {
+    var sanitizeHtml = require("sanitize-html");
     var clean = sanitizeHtml(message);
     io.emit("chat message", {
-      msg: clean,
+      msg: message,
       name: socket.name
     });
   });
 
-  socket.on("disconnect", function (data) {
-    if (PeopleTyping.includes(socket.name)) //if someone is typing while they disconnect, it won't keep them in the array
+  socket.on("disconnect", function(data) {
+    if (PeopleTyping.includes(socket.name))
+      //if someone is typing while they disconnect, it won't keep them in the array
       PeopleTyping.splice(PeopleTyping.indexOf(socket.name), 1);
     io.emit("leave", {
       name: socket.name
