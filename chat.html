@@ -8,6 +8,10 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
+    function PlayAudio(theFile) {
+        var audio = new Audio(theFile);
+        audio.play();
+    }
     $(function () {
         //the client user is the user currently on the page, he is a socket, but not to himself. (confusing)
         //TODO: implement a user class
@@ -39,9 +43,10 @@
 
         socket.on('join', function (user) {
 
-            if (ClientUserName != user)
+            if (ClientUserName != user) {
+                PlayAudio('./content/audio/open-ended.mp3');
                 $('#messages').append($('<li>' + user + " has joined the room!" + "</li>"));
-            else
+            } else
                 $('#messages').append($('<li>' + "Welcome, " + user + "! Enjoy your visit!" +
                     "</li>"));
         });
@@ -50,8 +55,7 @@
 
             if (ClientUserName != data.name) {
                 if (data.msg) {
-                    var audio = new Audio('./content/audio/not-bad.mp3');
-                    audio.play();
+                    PlayAudio("./content/audio/exquisite.mp3");
                     $('#messages').append($('<li>').append(data.name + ": " + data.msg + "</li>"))
                     $('#user-typing').html("");
                 }
@@ -73,6 +77,7 @@
 
         socket.on('leave', function (data) {
             $('#messages').append($('<li>' + data.name + " has left the room!" + "</li>"));
+            PlayAudio('./content/audio/case-closed.mp3');
         });
 
         socket.on('user typing', function (data) {
