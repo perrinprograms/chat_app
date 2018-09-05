@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "chat app",
   "main": "index.js",
+  "engines": {
+    "node": "8.11.1"
+  },
   "scripts": {
     "start": "node index.js"
   },
@@ -20,7 +23,11 @@
   },
   "homepage": "https://github.com/perrinprograms/chat_app#readme",
   "dependencies": {
+    "dompurify": "^1.0.7",
     "express": "^4.16.3",
+    "helmet": "^3.13.0",
+    "ip": "^1.1.5",
+    "sanitize-html": "^1.18.4",
     "socket.io": "^2.1.1"
   }
 }
