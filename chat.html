@@ -17,7 +17,7 @@
         //TODO: create a separate form for this instead of a prompt
 
         var ClientUserName = prompt('please enter your name')
-        var socket = io.connect("http://192.168.16.119:3000");
+        var socket = io();
 
         //when a chat message is sent, we will emit the message back to the server.(index.js)
         $('form').submit(function () {
@@ -95,6 +95,10 @@
 
 
 <body>
+    <div id="create-user">
+        <h1>Hello!Please enter a nickname to chat</h1>
+
+    </div>
     <div id="chat-window">
         <ul id="messages"></ul>
         <div id="user-typing"></div>
