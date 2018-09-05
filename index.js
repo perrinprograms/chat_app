@@ -3,13 +3,14 @@
 const express = require('express');
 const socketIO = require('socket.io');
 const path = require('path');
-
+var app = express();
 const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'chat.html');
 
 const server = express()
-  .use((req, res) => res.sendFile(INDEX))
+  .use(express.static(__dirname), (req, res) => res.sendFile(INDEX))
   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
+
 
 
 const io = socketIO(server);
@@ -17,7 +18,7 @@ const io = socketIO(server);
 var usernames = [];
 var PeopleTyping = [];
 
-server.use(express.static(__dirname));
+
 
 /* app.get("/", function (req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -72,8 +73,4 @@ io.on("connection", function (socket) {
       name: socket.name
     });
   });
-});
-
-http.listen(3000, function () {
-  console.log("listening on *:3000");
 });
