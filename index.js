@@ -1,19 +1,25 @@
-const express = require("express");
-var app = express();
-var http = require("http").Server(app);
-var io = require("socket.io")(http);
-var ip = require('ip');
-
 'use strict';
 
+const express = require('express');
+const socketIO = require('socket.io');
+const path = require('path');
+
+const PORT = process.env.PORT || 3000;
+const INDEX = path.join(__dirname, 'index.html');
+
+const server = express()
+  .use((req, res) => res.sendFile(INDEX))
+  .listen(PORT, () => console.log(`Listening on ${ PORT }`));
+
+
+const io = socketIO(server);
 
 var usernames = [];
 var PeopleTyping = [];
 
-app.use(express.static(__dirname));
+server.use(express.static(__dirname));
 
-app.get("/", function (req, res) {
-  res.setHeader('Access-Control-Allow-Origin', ip.address() + ":3000");
+/* app.get("/", function (req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
   // Request headers you wish to allow
   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
@@ -21,7 +27,9 @@ app.get("/", function (req, res) {
   // to the API (e.g. in case you use sessions)
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.sendFile(__dirname + "/chat.html");
-});
+}); */
+
+
 
 io.on("connection", function (socket) {
 
